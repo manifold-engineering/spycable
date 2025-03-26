@@ -1,0 +1,13 @@
+BUCK DC DC PMIC	https://jlcpcb.com/partdetail/1973381-LMR36506MSCQRPERQ1/C1882561
+C MLCC input LC	https://jlcpcb.com/partdetail/14236-CL31A106KBHNNNE/C13585
+L input LC 	https://jlcpcb.com/partdetail/179374-FNR5040S502MT/C167991
+C DC DC Out	https://jlcpcb.com/partdetail/71320-0603X106K160NT/C70225
+L DC DC buck	https://jlcpcb.com/partdetail/179275-FNR4030S680MT/C167892 or https://jlcpcb.com/partdetail/179271-FNR4030S470MT/C167888
+XTAL ESP	https://jlcpcb.com/partdetail/SeikoEpson-Q22FA12800332/C255899
+ESP MCU		https://jlcpcb.com/partdetail/EspressifSystems-ESP8685H4/C4944062
+Audio ADC	https://jlcpcb.com/partdetail/TexasInstruments-PCM1822IRTER/C5214995 or https://jlcpcb.com/partdetail/TexasInstruments-PCM1820IRTER/C5215004
+
+
+
+
+aux: USB pogo https://www.aliexpress.com/item/1005006470782095.html

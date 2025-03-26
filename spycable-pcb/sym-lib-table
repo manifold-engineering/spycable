@@ -1,0 +1,7 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "LMR36506")(type "KiCad")(uri "${KIPRJMOD}/downloads/components/LMR36506.kicad_sym")(options "")(descr ""))
+  (lib (name "ESP8685H4")(type "KiCad")(uri "${KIPRJMOD}/downloads/components/ESP8685H4.kicad_sym")(options "")(descr ""))
+  (lib (name "PCM1820")(type "KiCad")(uri "${KIPRJMOD}/downloads/components/PCM1820.kicad_sym")(options "")(descr ""))
+  (lib (name "ESP32-C3FH4")(type "KiCad")(uri "${KIPRJMOD}/downloads/components/ESP32-C3FH4.kicad_sym")(options "")(descr ""))
+)

@@ -1,0 +1,26 @@
+# KiCAD project files
+*.bak
+*.tmp
+*.swp
+*.kicad_bak
+*.kicad_prl
+__pycache__/
+
+# KiCAD schematic and PCB editor files
+*.b#*
+*.s#*
+*.l#*
+
+# KiCAD simulation files
+*.spi
+*.cache
+*.config
+
+# KiCAD library tables
+*.libtable.bak
+
+# Download folder includes datasheets and cad model from snapeda and ultra librarian. Especially Ultra librarian components are shitty, but still I think I would violate copyrights if I published them here.
+downloads/
+
+
+spycable-pcb-backups/
