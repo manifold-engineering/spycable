@@ -1,38 +1,31 @@
 #include <iostream>
 #include "audioringbuffer.h"
 
+
+
+void printRingBuffer(AudioRingBuffer arb){
+    std::cout << "Buffer, used " << arb.getStored() << " of " << arb.getCapacity() << std::endl;
+    for (int i = 0; i < arb.getStored(); ++i){
+        std::cout << arb.peekSingleSample(i) << ", ";
+    }
+    std::cout << std::endl;
+
+}
+
+#define INPUT_TEST_NUM 10
+
 int main() {
     constexpr size_t bufSize = 8;
     AudioRingBuffer ring(bufSize);
 
-    int32_t input[5] = {1, 2, 3, 4, 5};
-    ring.write(input, 5);
+    int32_t input[INPUT_TEST_NUM] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
-    std::cout << "Available to read: " << ring.availableToRead() << "\n";
+    SampleMetadata dummy_metadata;
 
-    int32_t output[5] = {};
-    ring.read(output, 8);
-
-    for (int i = 0; i < 8; ++i) {
-        std::cout << output[i] << " ";
+    for (unsigned int i = 0; i < INPUT_TEST_NUM; ++i){
+        ring.pushSingle(&input[i], &dummy_metadata);
     }
-    std::cout << "\n";
 
-    //int32_t output[5] = {};
-    ring.read(output, 5);
-
-    for (int i = 0; i < 8; ++i) {
-        std::cout << output[i] << " ";
-    }
-    std::cout << "\n";
-
-    ring.write(input, 6);
-
-    ring.read(output, 8);
-
-    for (int i = 0; i < 5; ++i) {
-        std::cout << output[i] << " ";
-    }
-    std::cout << "\n";
+    printRingBuffer(ring);
     return 0;
 }
