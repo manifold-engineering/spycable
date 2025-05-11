@@ -55,10 +55,30 @@ bool AudioRingBuffer::copyAudioTo(int32_t *loc, size_t num)
 {
     size_t num_checked = std::min(num, this->stored);
 
+
+    for (unsigned int i = 0; i < num; ++i){
+        loc[i] = this->peekSingleSample(i);
+    }
+
     return false;
-    //NOT IMPLEMENTED YET
 
 }
+
+bool AudioRingBuffer::movePlayHead(const size_t num)
+{
+    size_t checked_num = std::min(num, this->stored);
+    this->tail = (this->tail + checked_num)%this->capacity;
+    return checked_num == num;
+}
+
+void AudioRingBuffer::shallowFlush()
+{
+    this->head = 0;
+    this->tail = 0;
+    this->stored = 0;
+}
+
+
 
 
 /* AI generated bullcrap, thanks GPT, not really bad, but not what I envisioned

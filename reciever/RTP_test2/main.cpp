@@ -1,31 +1,28 @@
 #include <iostream>
-#include "audioringbuffer.h"
 
 
+#include "test_ringbuffer.h"
+#include "rtpserver.h"
 
-void printRingBuffer(AudioRingBuffer arb){
-    std::cout << "Buffer, used " << arb.getStored() << " of " << arb.getCapacity() << std::endl;
-    for (int i = 0; i < arb.getStored(); ++i){
-        std::cout << arb.peekSingleSample(i) << ", ";
-    }
-    std::cout << std::endl;
 
-}
 
 #define INPUT_TEST_NUM 10
 
 int main() {
-    constexpr size_t bufSize = 8;
-    AudioRingBuffer ring(bufSize);
 
-    int32_t input[INPUT_TEST_NUM] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    test_ringbuffer();
 
-    SampleMetadata dummy_metadata;
 
-    for (unsigned int i = 0; i < INPUT_TEST_NUM; ++i){
-        ring.pushSingle(&input[i], &dummy_metadata);
-    }
+    std::cout << "Debug info: Program starting\n";
 
-    printRingBuffer(ring);
-    return 0;
+    //Sleep(100);
+
+
+    //    PA_playback audio_playback;
+    RTPServer rtp_server;
+    rtp_server.init();
+    rtp_server.test_buffer("ahoj", 5);
+    rtp_server.run();
+
+
 }

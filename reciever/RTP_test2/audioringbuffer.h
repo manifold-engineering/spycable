@@ -33,7 +33,9 @@ public:
     sample_t peekSingleSample(const size_t num);
     size_t read(int32_t* out, size_t count);
     bool copyAudioTo(int32_t *loc, const size_t num);
+    bool movePlayHead(const size_t num);
 
+    void shallowFlush();
 
     bool isFull() const;
     bool isEmpty() const;
