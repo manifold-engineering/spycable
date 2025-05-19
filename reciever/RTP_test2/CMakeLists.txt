@@ -38,7 +38,8 @@ enable_language(C)
 add_subdirectory(portaudio EXCLUDE_FROM_ALL)
 
 # Create executable
-add_executable(RTP_test2 ${SOURCE_FILES})
+add_executable(RTP_test2 ${SOURCE_FILES}
+    paplayback.h paplayback.cpp)
 
 # Platform-specific networking libraries
 if(WIN32)

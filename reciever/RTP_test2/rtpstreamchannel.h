@@ -23,12 +23,17 @@ public:
     void setUsed(bool newUsed);
     void ingestSample(sample_t*, SampleMetadata*);
 
+
     // Move constructor
     RTPStreamChannel(RTPStreamChannel&& other) noexcept;
 
     // Delete copy constructor to prevent accidental copies
     RTPStreamChannel(const RTPStreamChannel&) = delete;
     RTPStreamChannel& operator=(const RTPStreamChannel&) = delete;
+
+    bool copyAudioTo(int32_t *loc, const size_t num);
+    bool movePlayHead(const size_t num);
+    //  AudioRingBuffer getBuff() const;    //ugly hack, not worth it
 
 };
 

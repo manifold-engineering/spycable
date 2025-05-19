@@ -240,6 +240,15 @@ void RTPServer::test_buffer(std::string name, unsigned int number_of_samples)
 
 }
 
+RTPStreamChannel *RTPServer::DEBUGGetOneChannelPtr()
+{
+    RTPStreamChannel *channel;
+    channel = &(*(this->channels.begin()));
+    return channel;
+}
+
+
+
 
 void RTPHeader::parse(const uint8_t *buffer) {
     std::memcpy(raw, buffer, sizeof(raw));

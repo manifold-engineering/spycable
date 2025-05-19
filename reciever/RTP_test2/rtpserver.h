@@ -71,6 +71,8 @@ private:
     struct sockaddr_in client_addr;
     void ingestData();
     std::vector<RTPStreamChannel> channels;
+
+    int DEBUG_ingest_counter;
 public:
 
     RTPServer(uint16_t port = DEFAULT_UDP_PORT, size_t stream_capacity=DEFAULT_STREAM_CAPACITY, size_t samples_capacity=DEFAULT_SAMPLES_CAPACITY);
@@ -80,6 +82,8 @@ public:
     bool init();
     void run();
     void test_buffer(std::string, unsigned int number_of_samples);
+    RTPStreamChannel* DEBUGGetOneChannelPtr();
+
 };
 
 #endif // RTPSERVER_H

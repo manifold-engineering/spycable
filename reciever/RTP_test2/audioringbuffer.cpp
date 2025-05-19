@@ -26,7 +26,7 @@ bool AudioRingBuffer::isEmpty() const
 
 void AudioRingBuffer::pushSingle(const int32_t *sample, const SampleMetadata *metadata)
 {
-    std::cout << "DEBUG: writing single sample" << std::endl;
+    std::cout << "DEBUG: writing single sample: " << *sample << std::endl;
     audio_buffer[head] = *sample;
     metadata_buffer[head] = *metadata;
 
@@ -48,6 +48,8 @@ sample_t AudioRingBuffer::peekSingleSample(const size_t num)
         return 0;
     }
     size_t index = (tail + num) % capacity;
+
+        std::cout << "DEBUG: peeking single sample: " << this->audio_buffer[index] << std::endl;
     return this->audio_buffer[index];
 }
 

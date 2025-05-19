@@ -23,6 +23,16 @@ RTPStreamChannel::RTPStreamChannel(RTPStreamChannel &&other) noexcept
     std::cout << "Moving RTPStreamChannel! This should have never happened." << std::endl;
 }
 
+bool RTPStreamChannel::copyAudioTo(int32_t *loc, const size_t num)
+{
+    return this->buff.copyAudioTo(loc, num);
+}
+
+bool RTPStreamChannel::movePlayHead(const size_t num)
+{
+    return this->buff.movePlayHead(num);
+}
+
 
 RTPStreamChannel::RTPStreamChannel(size_t capacity)
     :buff(capacity)
