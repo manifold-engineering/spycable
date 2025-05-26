@@ -53,23 +53,32 @@ public:
 
     void debug_print();
 
+
+
+    void test_audiobuffer();    //test only the audioringbuffer part, which doe not have public interface
+
 private:
     size_t head;
     size_t tail;
     size_t size;
     size_t capacity;
+    uint64_t playhead_absolute;
 
     uint64_t oldest_sample_absolute;
     uint64_t last_sample_absolute();
     //uint64_t chunk_sequence_num_overflows;
 
 
+
     void pushSingleSample(const sample_t *sample);
-    sample_t peekSingleSample(const size_t num);
+    sample_t peekSingleSampleRelative(const size_t num);
+    void incrementPlayhed();
 
     std::vector<int32_t> audio_buffer;
     std::map<uint64_t, ChunkMetadata> metadata_map;
 
 };
+
+
 
 #endif // AUDIORINGBUFFER_H

@@ -109,7 +109,121 @@ void AudioRingbuffer::ingestChunk(const char *samples, const size_t count, const
 
 }
 
+bool AudioRingbuffer::isEmpty() const
+{
+    return this->size == 0;
+}
+
+void AudioRingbuffer::shallowFlush()
+{
+    this->head = 0;
+    this->tail = 0;
+    this->size = 0;
+    this->playhead_absolute = 0;
+    this->metadata_map.clear();
+}
+
+void AudioRingbuffer::test_audiobuffer()
+{
+    std::cout << "Clearing before testing" << std::endl;
+    this->shallowFlush();
+    unsigned int n1 = 6;
+    std::cout << "Test writing " << n1 << " samples" << std::endl;
+    for (unsigned int i = 0; i < n1; ++i){
+        sample_t dato = 666 + i;
+        this->pushSingleSample(&dato);
+    }
+    std::cout << "current buffer content: " << this->size << " samples of " <<this->capacity<< std::endl;
+    for(unsigned int i = 0; i<this->size; ++i){
+        std::cout << this->peekSingleSampleRelative(i) << ", ";
+    }
+    std::cout << std::endl;
+
+    unsigned int n2 = 8;
+
+    std::cout << "Test writing another" << n2 << " samples" << std::endl;
+    for (unsigned int i = 0; i < n2; ++i){
+        sample_t dato = 42 + i;
+        this->pushSingleSample(&dato);
+    }
+    std::cout << "current buffer content: " << this->size << " samples of " <<this->capacity<< std::endl;
+    for(unsigned int i = 0; i<this->size; ++i){
+        std::cout << this->peekSingleSampleRelative(i) << ", ";
+    }
+    std::cout << std::endl;
+
+    unsigned int n3 = 3;
+
+    std::cout << "incrementing playhead by " << n3 << "samples";
+
+    this->incrementPlayhed();
+    this->incrementPlayhed();
+    this->incrementPlayhed();
+
+    std::cout << "current buffer content: " << this->size << " samples of " <<this->capacity<< std::endl;
+    for(unsigned int i = 0; i<this->size; ++i){
+        std::cout << this->peekSingleSampleRelative(i) << ", ";
+    }
+    std::cout << std::endl;
+
+
+    unsigned int n4 = 12;
+
+    std::cout << "Test writing another" << n4 << " samples" << std::endl;
+    for (unsigned int i = 0; i < n4; ++i){
+        sample_t dato = 69 + i;
+        this->pushSingleSample(&dato);
+    }
+    std::cout << "current buffer content: " << this->size << " samples of " <<this->capacity<< std::endl;
+    for(unsigned int i = 0; i<this->size; ++i){
+        std::cout << this->peekSingleSampleRelative(i) << ", ";
+    }
+    std::cout << std::endl;
+
+
+    std::cout << "Clearing after testing" << std::endl;
+    this->shallowFlush();
+
+}
+
 uint64_t AudioRingbuffer::last_sample_absolute()
 {
     return this->oldest_sample_absolute + this->size;
 }
+
+void AudioRingbuffer::pushSingleSample(const sample_t *sample)
+{
+    //std::cout << "DEBUG: writing single sample: " << *sample << std::endl;
+    audio_buffer[head] = *sample;
+
+    if (this->size == this->capacity)
+        this->tail = (this->tail + 1 ) % this->capacity;
+
+    this->size = std::min(this->size +1, this->capacity);
+
+    this->head = (this->head + 1 ) % this->capacity;
+}
+
+sample_t AudioRingbuffer::peekSingleSampleRelative(const size_t num)
+{
+    if (num >= this->size){
+        //raise(std::exception("not enoght data")); //maybe later
+        return 0;
+    }
+    size_t index = (tail + num) % capacity;
+
+    //std::cout << "DEBUG: peeking single sample: " << this->audio_buffer[index] << std::endl;
+    return this->audio_buffer[index];
+}
+
+void AudioRingbuffer::incrementPlayhed()
+{
+    if (this->isEmpty()){
+        //todo: maybe exception...
+        return;
+    }
+    this->size --;
+    this->tail = (this->tail + 1) % capacity;
+}
+
+
