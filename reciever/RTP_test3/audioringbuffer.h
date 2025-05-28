@@ -44,7 +44,7 @@ class AudioRingbuffer
 {
 public:
     explicit AudioRingbuffer(size_t capacitySamples);
-    void ingestChunk(const char *samples, const size_t count, const PacketMetadata metadata);
+    void ingestChunk(const sample_t *samples, const size_t count, const PacketMetadata metadata);
 
 
     bool isFull() const;
@@ -70,9 +70,11 @@ private:
 
 
 
-    void pushSingleSample(const sample_t *sample);
+    void pushSingleSample(const sample_t *sample);  //push at end, not regarding absolute
+    bool pushSingleSampleAbsolute(const sample_t *sample, uint64_t absolute_position);  //push sample with regarding absolute number
     sample_t peekSingleSampleRelative(const size_t num);
-    void incrementPlayhed();
+    bool incrementPlayhed();
+    bool incrementPlayhed(size_t num);
 
     std::vector<int32_t> audio_buffer;
     std::map<uint64_t, ChunkMetadata> metadata_map;

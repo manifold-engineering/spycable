@@ -27,7 +27,7 @@ uint64_t guessChunkNum (uint16_t rtp_sequence_number, uint64_t last_chunk_number
 
     uint64_t last_overflows = last_chunk_number/UINT16_MAX;
 
-    int64_t chunk_number_guess = UINT16_MAX*last_overflows + rtp_sequence_number;
+    uint64_t chunk_number_guess = UINT16_MAX*last_overflows + rtp_sequence_number;
 
     if (diff_unsigned(chunk_number_guess, last_chunk_number) < CHUNK_OO_TOL){
         //probably no overflow of RTP sequence between incoming and last chunk
@@ -48,7 +48,7 @@ uint64_t guessChunkNum (uint16_t rtp_sequence_number, uint64_t last_chunk_number
     throw UnexpectedPacketException("Packet too far from order");
 }
 
-void AudioRingbuffer::ingestChunk(const char *samples, const size_t count, const PacketMetadata metadata)
+void AudioRingbuffer::ingestChunk(const sample_t *samples, const size_t count, const PacketMetadata metadata)
 {
     /*
     uint64_t chunk_number = static_cast<uint64_t>(metadata.rtp_sequence_number) + UINT16_MAX*this->chunk_sequence_num_overflows;
@@ -61,14 +61,14 @@ void AudioRingbuffer::ingestChunk(const char *samples, const size_t count, const
 
     uint64_t chunk_num;
     try{
-        uint64_t chunk_num = guessChunkNum(metadata.rtp_sequence_number, last_chunk_num);
+        chunk_num = guessChunkNum(metadata.rtp_sequence_number, last_chunk_num);
     }
     catch (const UnexpectedPacketException& e) {
         std::cout << "Incorrect incoming packet: " << e.what() << std::endl;
         return;
     }
 
-    if (this->metadata_map.find(chunk_num) == this->metadata_map.end()){
+    if (this->metadata_map.find(chunk_num) != this->metadata_map.end()){
         std::cout << "Duplicit incoming packet: " << chunk_num << std::endl;
         return;
     }
@@ -88,25 +88,34 @@ void AudioRingbuffer::ingestChunk(const char *samples, const size_t count, const
     };
 
     auto insert_result = this->metadata_map.insert({chunk_num, new_chunk_metadata});
+    std::map<uint64_t, ChunkMetadata>::iterator new_chunk_it;
     if (!insert_result.second){
-        std::cout << "could not insert metadata, skipping sample" << std::endl;
+        std::cout << "could not insert metadata, skipping chunk" << std::endl;
         return;
     }
-    else if (insert_result.first == this->metadata_map.begin()){
-        //we have no sampler prior to this one, lets calculate same way as before
+    else{
+        new_chunk_it = insert_result.first;
+    }
+
+    if (new_chunk_it == this->metadata_map.begin()){
+        //we have no sample prior to this one, lets calculate same way as before
         first_sample_num = metadata.rtp_sequence_number * count;
     }
     else{
         //we have previous samples, lets continue numbering with them
-        ChunkMetadata previous_chunk_metadata = (*(insert_result.first--)).second;
-        first_sample_num = previous_chunk_metadata.absolute_start_sample + previous_chunk_metadata.sample_count;
+        ChunkMetadata previous_chunk_metadata = (*(std::prev(new_chunk_it))).second;
+        uint64_t previous_chunk_absolute_num = (*(std::prev(new_chunk_it))).first;
+        unsigned int chunk_num_diff = chunk_num - previous_chunk_absolute_num;
+        first_sample_num = previous_chunk_metadata.absolute_start_sample + previous_chunk_metadata.sample_count * chunk_num_diff;
     }
 
     insert_result.first->second.absolute_start_sample = first_sample_num;
 
     //now metadata computed and inserted
 
-
+    for (unsigned int sample_num = 0; sample_num < count; ++sample_num){
+        this->pushSingleSampleAbsolute(&samples[sample_num], first_sample_num + sample_num);
+    }
 }
 
 bool AudioRingbuffer::isEmpty() const
@@ -184,6 +193,7 @@ void AudioRingbuffer::test_audiobuffer()
     std::cout << "Clearing after testing" << std::endl;
     this->shallowFlush();
 
+
 }
 
 uint64_t AudioRingbuffer::last_sample_absolute()
@@ -196,12 +206,57 @@ void AudioRingbuffer::pushSingleSample(const sample_t *sample)
     //std::cout << "DEBUG: writing single sample: " << *sample << std::endl;
     audio_buffer[head] = *sample;
 
-    if (this->size == this->capacity)
+    if (this->size == this->capacity){
         this->tail = (this->tail + 1 ) % this->capacity;
+        this->oldest_sample_absolute ++;
+    }
 
     this->size = std::min(this->size +1, this->capacity);
 
     this->head = (this->head + 1 ) % this->capacity;
+}
+
+bool AudioRingbuffer::pushSingleSampleAbsolute(const sample_t *sample, uint64_t absolute_position)
+{
+    if (this->isEmpty()){
+        //we are inserting first sample, hooray
+        this->pushSingleSample(sample);
+        this->oldest_sample_absolute = absolute_position;
+        return true;
+    }
+
+    if (absolute_position < this->oldest_sample_absolute){
+        //incoming sample is to old, our buffer is already ahaed, discarding incoming sample
+        return false;
+    }
+
+    /*
+    if (absolute_position > this->oldest_sample_absolute + this->capacity){
+        //we are far into future
+        //none of current buffer is relevant
+        this->shallowFlush();
+        this->pushSingleSampleAbsolute(sample, absolute_position);
+        //looks like a recursion, but since buffer was emptied it should fall into first case of this method anyways
+    }
+    */
+
+    if (absolute_position >= this->last_sample_absolute()){
+        sample_t dummy_zero = 0;
+        size_t pad_samples_num = absolute_position - this->last_sample_absolute();
+        for (unsigned int i = 0; i< pad_samples_num; ++i){
+            this->pushSingleSample(&dummy_zero);
+        }
+        this->pushSingleSample(sample);
+        return true;
+    }
+
+    //now I basically know the incoming sample needs to "fit" inside current buffer
+    //so I dont need to move head/tails
+    uint64_t diff = absolute_position - this->oldest_sample_absolute;
+    size_t index = (tail + diff)% this->capacity;
+    this->audio_buffer[index] = *sample;
+    return true;
+
 }
 
 sample_t AudioRingbuffer::peekSingleSampleRelative(const size_t num)
@@ -216,14 +271,24 @@ sample_t AudioRingbuffer::peekSingleSampleRelative(const size_t num)
     return this->audio_buffer[index];
 }
 
-void AudioRingbuffer::incrementPlayhed()
+bool AudioRingbuffer::incrementPlayhed(size_t num)
+{
+    size_t incrementing_num = std::min(this->size, num);
+    for(unsigned int i = 0; i<incrementing_num; ++i){
+        this->incrementPlayhed();
+    }
+    return incrementing_num == num;
+}
+
+bool AudioRingbuffer::incrementPlayhed()
 {
     if (this->isEmpty()){
         //todo: maybe exception...
-        return;
+        return false;
     }
     this->size --;
     this->tail = (this->tail + 1) % capacity;
+    this->oldest_sample_absolute ++;
+    return true;
 }
-
 
