@@ -39,7 +39,6 @@ struct ChunkMetadata {
 };
 
 
-
 class AudioRingbuffer
 {
 public:
@@ -50,12 +49,17 @@ public:
     bool isFull() const;
     bool isEmpty() const;
     void shallowFlush();
-
+    sample_t peek_absolute(uint64_t sample_num_absolute) const;
+    void copyAudioDataToAbosulte(sample_t *target, uint64_t start_sample_num_absolute, size_t num) const;
     void debug_print();
 
 
 
     void test_audiobuffer();    //test only the audioringbuffer part, which doe not have public interface
+
+
+    uint64_t last_sample_absolute() const;
+    uint64_t getOldest_sample_absolute() const;
 
 private:
     size_t head;
@@ -65,7 +69,7 @@ private:
     uint64_t playhead_absolute;
 
     uint64_t oldest_sample_absolute;
-    uint64_t last_sample_absolute();
+
     //uint64_t chunk_sequence_num_overflows;
 
 

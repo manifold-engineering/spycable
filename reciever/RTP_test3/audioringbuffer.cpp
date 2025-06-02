@@ -132,6 +132,24 @@ void AudioRingbuffer::shallowFlush()
     this->metadata_map.clear();
 }
 
+sample_t AudioRingbuffer::peek_absolute(uint64_t sample_num_absolute) const
+{
+    if(this->oldest_sample_absolute < sample_num_absolute || this->last_sample_absolute() > sample_num_absolute){
+        //requested sample is not in this buffer
+        return 0;
+    }
+    size_t diff = sample_num_absolute - oldest_sample_absolute;
+    size_t index = (this->tail + diff) % this->capacity;
+    return this->audio_buffer[index];
+}
+
+void AudioRingbuffer::copyAudioDataToAbosulte(sample_t *target, uint64_t start_sample_num_absolute, size_t num) const
+{
+    for (unsigned int i = 0; i<num; ++i){
+        target[i] =this->peek_absolute(start_sample_num_absolute + i);
+    }
+}
+
 void AudioRingbuffer::test_audiobuffer()
 {
     std::cout << "Clearing before testing" << std::endl;
@@ -196,9 +214,14 @@ void AudioRingbuffer::test_audiobuffer()
 
 }
 
-uint64_t AudioRingbuffer::last_sample_absolute()
+uint64_t AudioRingbuffer::last_sample_absolute() const
 {
     return this->oldest_sample_absolute + this->size;
+}
+
+uint64_t AudioRingbuffer::getOldest_sample_absolute() const
+{
+    return oldest_sample_absolute;
 }
 
 void AudioRingbuffer::pushSingleSample(const sample_t *sample)
