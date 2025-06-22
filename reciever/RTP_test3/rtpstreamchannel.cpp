@@ -7,7 +7,7 @@ RTPStreamChannel::RTPStreamChannel(size_t capacity)
 {
     this->buff = new AudioRingbuffer(capacity);
     std::cout << "Konstruktor RTSP Stream Channel" << std::endl;
-    this->state = INACTIVE;
+    this->state_network = INACTIVE;
 }
 
 RTPStreamChannel::~RTPStreamChannel()
@@ -18,6 +18,6 @@ RTPStreamChannel::~RTPStreamChannel()
 
 void RTPStreamChannel::reset()
 {
-    this->state=INACTIVE;
+    this->state_network=INACTIVE;
     this->buff->shallowFlush();
 }

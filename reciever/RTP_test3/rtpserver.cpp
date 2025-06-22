@@ -74,6 +74,19 @@ void RTPServer::ingestData()
 
     deinterlace_pad_incoming_data(payload, &deinterlaced, sample_count, payload_type);
 
+    PacketMetadata metadata = {
+        .rtp_sequence_number =  header.sequence_number,
+        .rtp_timestamp =  header.timestamp,
+    };
+
+    for (unsigned int i = 0; i<channel_count; ++i){
+        std::string channel_name = channel_names[i];
+        RTPStreamChannel &channel = this->channels[channel_name];
+        channel.state_network = ACTIVE;
+        sample_t *channel_audio_data = deinterlaced.channel_data(i);
+
+        channel.buff->ingestChunk(channel_audio_data, sample_count, metadata);
+    }
 
 
 

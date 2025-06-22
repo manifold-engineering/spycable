@@ -4,23 +4,23 @@
 #include <string>
 
 
+#include "config.h"
 #include "audioringbuffer.h"
 
 enum ChannelState {
-
     INACTIVE,
-    BUFFERING,
-    PLAYBACK,
+    ACTIVE
 };
 
 class RTPStreamChannel{
 public:
     AudioRingbuffer *buff;
     //std::string name;
-    ChannelState state;
+    ChannelState state_network;
+    ChannelState state_palyback;
     //bool used;
 
-    RTPStreamChannel(size_t capacity);
+    RTPStreamChannel(size_t capacity = DEFAULT_SAMPLES_CAPACITY);
     ~RTPStreamChannel();
 
     void reset();
